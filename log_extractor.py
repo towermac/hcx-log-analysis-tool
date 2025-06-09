@@ -1,14 +1,28 @@
 import os
 import zipfile
 import tarfile
+import gzip
+import shutil
+
+def extract_gz_files(directory):
+    """递归解压所有 .gz 文件（不包括 .tar.gz）"""
+    extracted = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.gz') and not (file.endswith('.tar.gz') or file.endswith('.tgz')):
+                gz_path = os.path.join(root, file)
+                out_path = os.path.splitext(gz_path)[0]
+                with gzip.open(gz_path, 'rb') as f_in, open(out_path, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+                extracted.append(out_path)
+                # 如果需要删除原 .gz 文件，取消下一行注释
+                # os.remove(gz_path)
+    return extracted
 
 def extract_log(archive_path, extract_to=None):
     """
     Extract log archive (supports zip and tar.gz formats).
-
-    :param archive_path: Path to the archive file
-    :param extract_to: Directory to extract to (default: same as archive name)
-    :return: List of extracted file paths
+    Also auto-extract .gz files found after initial extraction.
     """
     if not extract_to:
         extract_to = os.path.splitext(os.path.abspath(archive_path))[0]
@@ -28,6 +42,10 @@ def extract_log(archive_path, extract_to=None):
             extracted_files = [os.path.join(extract_to, name) for name in tf.getnames()]
     else:
         raise ValueError("Unsupported archive format. Only zip and tar.gz are supported.")
+
+    # 递归解压 .gz 文件
+    gz_extracted = extract_gz_files(extract_to)
+    extracted_files.extend(gz_extracted)
 
     return extracted_files
 
