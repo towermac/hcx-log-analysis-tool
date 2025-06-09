@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Log Analysis Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #20264b; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
+        th { background: #f2f2f2; }
+        .exception { background: #ffeaea; color: #c00; }
+        .summary { margin: 1em 0; }
+    </style>
+</head>
+<body>
+    <h1>Log Analysis Report</h1>
+    <div class="summary">
+        Generated: {{ generate_time }}<br/>
+        Total logs: {{ total_logs }}, Exceptions: <span style="color:#c00">{{ exception_count }}</span>
+    </div>
+    <table>
+        <tr>
+            <th>#</th>
+            <th>Timestamp</th>
+            <th>Level</th>
+            <th>Message</th>
+        </tr>
+        {% for idx, log in enumerate(logs) %}
+        <tr class="{% if log.is_exception %}exception{% endif %}">
+            <td>{{ idx + 1 }}</td>
+            <td>{{ log.timestamp }}</td>
+            <td>{{ log.level }}</td>
+            <td>{{ log.message }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h2>Exception Logs</h2>
+    <ul>
+        {% for ex in exceptions %}
+        <li><b>{{ ex.timestamp }}</b> [{{ ex.level }}] {{ ex.message }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
